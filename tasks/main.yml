@@ -67,7 +67,7 @@
     owner=caddy
   with_items:
     - /etc/caddy
-    - /var/www
+    - "{{caddy_root_dir}}"
 
 - name: Create Caddyfile
   copy:
