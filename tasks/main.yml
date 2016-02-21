@@ -69,11 +69,26 @@
     - /etc/caddy
     - "{{caddy_root_dir}}"
 
-- name: Create Caddyfile
-  copy:
-    content="{{caddy_config}}"
+- name: Create Caddyfile from template
+  template:
+    src=Caddyfile.j2
     dest=/etc/caddy/Caddyfile
   notify: Restart Caddy
+  when: not caddy_Caddyfile
+
+- name: Copy user Caddyfile
+  copy:
+    src="{{caddy_Caddyfile}}"
+    dest=/etc/caddy/Caddyfile
+  notify: Restart Caddy
+  when: caddy_Caddyfile
+
+- name: Copy basic index.html
+  template:
+    src=index.html.j2
+    dest={{caddy_root_dir}}/index.html
+    force=no
+  when: not caddy_Caddyfile
 
 - name: apt | Install git
   apt: name=git update_cache=yes
