@@ -1,31 +1,50 @@
 ---
 - name: Create Caddy user
-  user: name=caddy system=yes createhome=yes
+  user:
+    name=caddy
+    system=yes
+    createhome=yes
 
 - name: Get all Caddy releases
-  get_url: url=https://api.github.com/repos/mholt/caddy/git/refs/tags dest=/home/caddy/releases.txt force=yes
+  get_url:
+    url=https://api.github.com/repos/mholt/caddy/git/refs/tags
+    dest=/home/caddy/releases.txt
+    force=yes
   when: caddy_update
   register: caddy_releases_cache
 
 - name: Set Caddy features
-  copy: content="{{caddy_features}}" dest=/home/caddy/features.txt
+  copy:
+    content="{{caddy_features}}"
+    dest=/home/caddy/features.txt
   when: caddy_update
   register: caddy_features_cache
 
-- name: Download Caddy
-  get_url: url=https://caddyserver.com/download/build?os=linux&arch=amd64&features={{caddy_features}} dest=/home/caddy/caddy.tar.gz force=yes
+- name: Download new Caddy version or build
+  get_url:
+    url=https://caddyserver.com/download/build?os=linux&arch=amd64&features={{caddy_features}}
+    dest=/home/caddy/caddy.tar.gz force=yes
   when: caddy_releases_cache.changed or caddy_features_cache.changed
   register: caddy_binary_cache
 
 - name: Download Caddy
-  get_url: url=https://caddyserver.com/download/build?os=linux&arch=amd64&features={{caddy_features}} dest=/home/caddy/caddy.tar.gz
+  get_url:
+    url=https://caddyserver.com/download/build?os=linux&arch=amd64&features={{caddy_features}}
+    dest=/home/caddy/caddy.tar.gz
 
-- name: Extract Caddy
-  unarchive: src=/home/caddy/caddy.tar.gz dest=/usr/bin/ copy=no
+- name: Extract new Caddy version or build
+  unarchive:
+    src=/home/caddy/caddy.tar.gz
+    dest=/usr/bin/
+    copy=no
   when: caddy_binary_cache.changed
 
 - name: Extract Caddy
-  unarchive: src=/home/caddy/caddy.tar.gz dest=/usr/bin/ creates=/usr/bin/caddy copy=no
+  unarchive:
+    src=/home/caddy/caddy.tar.gz
+    dest=/usr/bin/
+    creates=/usr/bin/caddy
+    copy=no
 
 - name: Install libraries
   apt: name=libcap2-bin
@@ -42,13 +61,18 @@
   when: caddy_bind_cap.rc > 0
 
 - name: Create directories
-  file: path={{ item }} state=directory owner=caddy
+  file:
+    path={{ item }}
+    state=directory
+    owner=caddy
   with_items:
     - /etc/caddy
     - /var/www
 
 - name: Create Caddyfile
-  copy: content="{{caddy_config}}" dest=/etc/caddy/Caddyfile
+  copy:
+    content="{{caddy_config}}"
+    dest=/etc/caddy/Caddyfile
   notify: Restart Caddy
 
 - name: apt | Install git
@@ -64,16 +88,23 @@
   when: ansible_pkg_mgr == 'dnf' and caddy_features | search('git')
 
 - name: Upstart service
-  template: src=caddy.conf dest=/etc/init/caddy.conf
+  template:
+    src=caddy.conf
+    dest=/etc/init/caddy.conf
   ignore_errors: yes
   when: not caddy_init_system or caddy_init_system == "upstart"
   notify: Restart Caddy
 
 - name: Systemd service
-  template: src=caddy.service dest=/etc/systemd/system/caddy.service
+  template:
+    src=caddy.service
+    dest=/etc/systemd/system/caddy.service
   ignore_errors: yes
   when: not caddy_init_system or caddy_init_system == "systemd"
   notify: Reload systemd service file
 
 - name: Start Caddy service
-  service: name=caddy state=started enabled=yes
+  service:
+    name=caddy
+    state=started
+    enabled=yes
