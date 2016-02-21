@@ -90,17 +90,11 @@
     force=no
   when: not caddy_Caddyfile
 
-- name: apt | Install git
-  apt: name=git update_cache=yes
-  when: ansible_pkg_mgr == 'apt' and caddy_features | search('git')
-
-- name: yum | Install git
-  yum: name=git
-  when: ansible_pkg_mgr == 'yum' and caddy_features | search('git')
-
-- name: dnf | Install git
-  dnf: name=git
-  when: ansible_pkg_mgr == 'dnf' and caddy_features | search('git')
+- name: Install git
+  package:
+    name=git
+    state=latest
+  when: caddy_features | search("git") 
 
 - name: Upstart service
   template:
