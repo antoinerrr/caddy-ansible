@@ -71,21 +71,21 @@
     src=Caddyfile.j2
     dest=/etc/caddy/Caddyfile
   notify: Restart Caddy
-  when: not caddy_Caddyfile
+  when: caddy_Caddyfile is not defined
 
 - name: Copy user Caddyfile
   copy:
     src="{{caddy_Caddyfile}}"
     dest=/etc/caddy/Caddyfile
   notify: Restart Caddy
-  when: caddy_Caddyfile
+  when: caddy_Caddyfile is defined
 
 - name: Copy basic index.html
   template:
     src=index.html.j2
     dest={{caddy_root_dir}}/index.html
     force=no
-  when: not caddy_Caddyfile
+  when: caddy_Caddyfile is not defined
 
 - include: packages-apt.yml
   when: ansible_pkg_mgr == 'apt'
