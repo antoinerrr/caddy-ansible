@@ -1,4 +1,7 @@
 ---
+- include: packages-apt.yml
+  when: ansible_pkg_mgr == 'apt'
+
 - name: Create Caddy user
   user:
     name=caddy
@@ -86,9 +89,6 @@
     dest={{caddy_root_dir}}/index.html
     force=no
   when: caddy_Caddyfile is not defined
-
-- include: packages-apt.yml
-  when: ansible_pkg_mgr == 'apt'
 
 - name: Install git
   package:
