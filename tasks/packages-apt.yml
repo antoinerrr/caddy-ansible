@@ -1,0 +1,8 @@
+---
+
+- name: Install git
+  apt: name=git update_cache=yes
+  when: caddy_features | search('git')
+
+- name: Install libcap
+  apt: name=libcap2-bin

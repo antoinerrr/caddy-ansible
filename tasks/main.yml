@@ -1,4 +1,13 @@
 ---
+- include: packages-apt.yml
+  when: ansible_pkg_mgr == 'apt'
+
+- include: packages-yum.yml
+  when: ansible_pkg_mgr == 'yum'
+
+- include: packages-dnf.yml
+  when: ansible_pkg_mgr == 'dnf'
+
 - name: Create Caddy user
   user:
     name=caddy
@@ -45,10 +54,6 @@
     dest=/usr/bin/
     creates=/usr/bin/caddy
     copy=no
-
-- name: Install libraries
-  apt: name=libcap2-bin
-  when: ansible_os_family == "Debian"
 
 - name: Check if the binary can bind to TCP port <1024
   shell: getcap /usr/bin/caddy | grep cap_net_bind_service
