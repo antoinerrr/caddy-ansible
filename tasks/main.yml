@@ -1,13 +1,4 @@
 ---
-- include: packages-apt.yml
-  when: ansible_pkg_mgr == 'apt'
-
-- include: packages-yum.yml
-  when: ansible_pkg_mgr == 'yum'
-
-- include: packages-dnf.yml
-  when: ansible_pkg_mgr == 'dnf'
-
 - name: Create Caddy user
   user:
     name=caddy
@@ -32,7 +23,8 @@
 - name: Download new Caddy version or build
   get_url:
     url=https://caddyserver.com/download/build?os=linux&arch=amd64&features={{caddy_features}}
-    dest=/home/caddy/caddy.tar.gz force=yes
+    dest=/home/caddy/caddy.tar.gz
+    force=yes
   when: caddy_releases_cache.changed or caddy_features_cache.changed
   register: caddy_binary_cache
 
@@ -94,6 +86,9 @@
     dest={{caddy_root_dir}}/index.html
     force=no
   when: not caddy_Caddyfile
+
+- include: packages-apt.yml
+  when: ansible_pkg_mgr == 'apt'
 
 - name: Install git
   package:
