@@ -5,4 +5,3 @@ caddy_update: yes
 caddy_init_system: no
 caddy_root_dir: /var/www
 caddy_ip_or_fqdn: "{{ ansible_eth0.ipv4.address }}"
-caddy_Caddyfile: no
