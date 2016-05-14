@@ -49,7 +49,7 @@
   when: not caddy_init_system or caddy_init_system == "upstart"
   notify: Restart Caddy
 
-- name: Config for Systemd service from github
+- name: Systemd service | get config from github
   get_url: url=https://raw.githubusercontent.com/mholt/caddy/master/dist/init/linux-systemd/caddy.service dest=/etc/systemd/system/caddy.service mode=0755
   ignore_errors: yes
   when: not caddy_init_system or caddy_init_system == "systemd"
