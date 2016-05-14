@@ -19,15 +19,9 @@
   when: caddy_releases_cache.changed or caddy_features_cache.changed
   register: caddy_binary_cache
 
-- name: Download Caddy
-  get_url: url=https://caddyserver.com/download/build?os=linux&arch=amd64&features={{caddy_features}} dest=/home/caddy/caddy.tar.gz
-
-- name: Extract Caddy
-  unarchive: src=/home/caddy/caddy.tar.gz dest=/usr/bin/ copy=no
-  when: caddy_binary_cache.changed
-
 - name: Extract Caddy
   unarchive: src=/home/caddy/caddy.tar.gz dest=/usr/bin/ creates=/usr/bin/caddy copy=no
+  when: caddy_binary_cache.changed
 
 - name: Check if the binary can bind to TCP port <1024
   shell: getcap /usr/bin/caddy | grep cap_net_bind_service
