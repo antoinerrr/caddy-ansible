@@ -2,7 +2,16 @@
 - include: packages-{{ ansible_pkg_mgr }}.yml
 
 - name: Create Caddy user
-  user: name=caddy system=yes createhome=yes
+  user: name={{ caddy_user }} system=yes createhome=yes home={{ caddy_home }}
+
+- name: Create directories
+  file: path={{ item }} state=directory owner={{ caddy_user }} mode=0770
+  with_items:
+    - /etc/caddy
+    - /etc/ssl/caddy
+    - /var/www
+    - "{{ caddy_home }}"
+    - /var/log/caddy
 
 - name: Get all Caddy releases
   get_url: url=https://api.github.com/repos/mholt/caddy/git/refs/tags dest={{ caddy_home }}/releases.txt force=yes
@@ -33,12 +42,6 @@
   command: setcap cap_net_bind_service=+ep /usr/bin/caddy
   when: caddy_bind_cap.rc > 0
 
-- name: Create directories
-  file: path={{ item }} state=directory owner=caddy
-  with_items:
-    - /etc/caddy
-    - /var/www
-
 - name: Create Caddyfile
   copy: content="{{caddy_config}}" dest=/etc/caddy/Caddyfile
   notify: Restart Caddy
@@ -52,6 +55,23 @@
 - name: Systemd service | get config from github
   get_url: url=https://raw.githubusercontent.com/mholt/caddy/master/dist/init/linux-systemd/caddy.service dest=/etc/systemd/system/caddy.service mode=0755
   ignore_errors: yes
+  when: not caddy_init_system or caddy_init_system == "systemd"
+  notify: Reload systemd service file
+
+- name: Systemd service | set ExecStart
+  lineinfile: 
+    state: present
+    dest: /etc/systemd/system/caddy.service
+    regexp: '^ExecStart\='
+    line: 'ExecStart=/usr/bin/caddy -log stdout -agree=true -email {{ caddy_email }} -conf=/etc/caddy/Caddyfile -root=/var/www'
+  when: not caddy_init_system or caddy_init_system == "systemd"
+  notify: Reload systemd service file
+
+- name: Systemd service | fix port permission error
+  lineinfile: 
+    state: absent
+    dest: /etc/systemd/system/caddy.service
+    regexp: '^NoNewPrivileges\=true'
   when: not caddy_init_system or caddy_init_system == "systemd"
   notify: Reload systemd service file
 
