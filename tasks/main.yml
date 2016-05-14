@@ -43,14 +43,14 @@
   copy: content="{{caddy_config}}" dest=/etc/caddy/Caddyfile
   notify: Restart Caddy
 
-- name: Upstart service
-  template: src=caddy.conf dest=/etc/init/caddy.conf
+- name: Config for Upstart service from github
+  get_url: url=https://raw.githubusercontent.com/mholt/caddy/master/dist/init/linux-upstart/caddy.conf dest=/etc/init/caddy.conf mode=0755
   ignore_errors: yes
   when: not caddy_init_system or caddy_init_system == "upstart"
   notify: Restart Caddy
 
-- name: Systemd service
-  template: src=caddy.service dest=/etc/systemd/system/caddy.service
+- name: Config for Systemd service from github
+  get_url: url=https://raw.githubusercontent.com/mholt/caddy/master/dist/init/linux-systemd/caddy.service dest=/etc/systemd/system/caddy.service mode=0755
   ignore_errors: yes
   when: not caddy_init_system or caddy_init_system == "systemd"
   notify: Reload systemd service file
