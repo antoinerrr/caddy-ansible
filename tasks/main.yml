@@ -3,35 +3,51 @@
 
 - name: Create Caddy user
   user: name={{ caddy_user }} system=yes createhome=yes home={{ caddy_home }}
+  tags:
+    - caddy
 
 - name: Get all Caddy releases
   get_url: url=https://api.github.com/repos/mholt/caddy/git/refs/tags dest={{ caddy_home }}/releases.txt force=yes
   when: caddy_update
   register: caddy_releases_cache
+  tags:
+    - caddy
 
 - name: Set Caddy features
   copy: content="{{ caddy_features }}" dest={{ caddy_home }}/features.txt
   when: caddy_update
   register: caddy_features_cache
+  tags:
+    - caddy
 
 - name: Download Caddy
   get_url: url=https://caddyserver.com/download/build?os=linux&arch=amd64&features={{ caddy_features }} dest={{ caddy_home }}/caddy.tar.gz force=yes
   when: caddy_releases_cache.changed or caddy_features_cache.changed
   register: caddy_binary_cache
+  tags:
+    - caddy
 
 - name: Download Caddy
   get_url: url=https://caddyserver.com/download/build?os=linux&arch=amd64&features={{ caddy_features }} dest={{ caddy_home }}/caddy.tar.gz
+  tags:
+    - caddy
 
 - name: Extract Caddy
   unarchive: src={{ caddy_home }}/caddy.tar.gz dest={{ caddy_home }} copy=no owner={{ caddy_user }}
   when: caddy_binary_cache.changed
+  tags:
+    - caddy
 
 - name: Extract Caddy
   unarchive: src={{ caddy_home }}/caddy.tar.gz dest={{ caddy_home }} creates={{ caddy_home }}/caddy copy=no owner={{ caddy_user }}
+  tags:
+    - caddy
 
 - name: Copy Caddy Binary
   copy: src={{ caddy_home }}/caddy dest=/usr/local/bin/ mode=0755 remote_src=True
   notify: Restart Caddy
+  tags:
+    - caddy
 
 - name: Create directories
   file: path={{ item }} state=directory owner={{ caddy_user }} mode=0700
@@ -40,24 +56,41 @@
     - /etc/ssl/caddy
     - /var/www
     - /var/log/caddy
+  tags:
+    - caddy
 
 - name: Create Caddyfile
   copy: content="{{caddy_config}}" dest=/etc/caddy/Caddyfile owner={{ caddy_user }}
   notify: Restart Caddy
+  tags:
+    - caddy
+    - caddyconf
 
 - name: Check if systemd is running
   stat: path=/run/systemd/system
   register: systemd
+  tags:
+    - caddy
 
 - name: Upstart service
   copy: src={{ caddy_home }}/init/linux-upstart/caddy.conf dest=/etc/init/caddy.conf mode=0644 remote_src=True
-  when: not systemd.stat.exists
+  when: not systemd.stat.exists and {{ ansible_distribution_version }}|int > 6
   notify: Restart Caddy
+  tags:
+    - caddy
+
+- name: SysV Service
+  template: src=rhel-sysvinit.j2 dest=/etc/init.d/caddy owner=root group=root mode=0755
+  when: not systemd.stat.exists and ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux' and {{ ansible_distribution_version }}|int == 6
+  tags:
+    - caddy
 
 - name: Systemd service
   copy: src={{ caddy_home }}/init/linux-systemd/caddy.service dest=/etc/systemd/system/caddy.service mode=0755 remote_src=True
   when: systemd.stat.exists
   notify: Restart Caddy
+  tags:
+    - caddy
 
 - name: Check if the binary can bind to TCP port <1024
   shell: getcap /usr/local/bin/caddy | grep cap_net_bind_service
@@ -65,10 +98,16 @@
   changed_when: False
   when: not systemd.stat.exists
   register: caddy_bind_cap
+  tags:
+    - caddy
 
 - name: Set capability on the binary file to be able to bind to TCP port <1024
   command: setcap cap_net_bind_service=+ep /usr/local/bin/caddy
   when: not systemd.stat.exists and caddy_bind_cap.rc > 0
+  tags:
+    - caddy
 
 - name: Start Caddy service
   service: name=caddy state=started enabled=yes
+  tags:
+    - caddy
