@@ -49,9 +49,21 @@
   stat: path=/run/systemd/system
   register: systemd
 
+- name: Upstart service for ubuntu 12.04
+  copy: src={{ caddy_home }}/init/linux-upstart/caddy.conf.ubuntu-12.04 dest=/etc/init/caddy.conf mode=0644 remote_src=True
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'precise'
+  register: custom_upstart_ubuntu
+  notify: Restart Caddy
+
+- name: Upstart service for centos 6
+  copy: src={{ caddy_home }}/init/linux-upstart/caddy.conf.centos-6 dest=/etc/init/caddy.conf mode=0644 remote_src=True
+  when: ansible_distribution == 'CentOS' and ansible_distribution_major_version == '6'
+  register: custom_upstart_centos
+  notify: Restart Caddy
+
 - name: Upstart service
   copy: src={{ caddy_home }}/init/linux-upstart/caddy.conf dest=/etc/init/caddy.conf mode=0644 remote_src=True
-  when: not systemd.stat.exists
+  when: not systemd.stat.exists and not custom_upstart_ubuntu.changed and not custom_upstart_centos.changed
   notify: Restart Caddy
 
 - name: Systemd service
