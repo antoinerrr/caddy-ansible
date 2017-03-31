@@ -9,9 +9,3 @@ caddy_conf_dir: /etc/caddy
 caddy_log_file: stdout
 caddy_certs_dir: /etc/ssl/caddy
 caddy_setcap: yes
-caddy_config: |
-  localhost:2020
-  gzip
-  # tls email@example.com
-  # root /var/www
-  git github.com/antoiner77/caddy-ansible
