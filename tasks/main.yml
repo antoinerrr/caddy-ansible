@@ -4,6 +4,10 @@
 - name: Create Caddy user
   user: name={{ caddy_user }} system=yes createhome=yes home={{ caddy_home }}
 
+- assert:
+    that: not (caddy_update and (caddy_archive_file is defined))
+    msg: "caddy_update must be false when specifying caddy_archive_file, as the detection of new Caddy must depend on either of downloaded or copied archive - not both"
+
 - name: Get all Caddy releases
   get_url: url=https://api.github.com/repos/mholt/caddy/git/refs/tags dest={{ caddy_home }}/releases.txt force=yes
   when: caddy_update
@@ -16,15 +20,21 @@
 
 - name: Download Caddy
   get_url: url=https://caddyserver.com/download/build?os=linux&arch=amd64&features={{ caddy_features }} dest={{ caddy_home }}/caddy.tar.gz force=yes
-  when: caddy_releases_cache.changed or caddy_features_cache.changed
-  register: caddy_binary_cache
+  when: caddy_update and (caddy_releases_cache.changed or caddy_features_cache.changed)
+  register: caddy_downloaded_binary_cache
 
 - name: Download Caddy
   get_url: url=https://caddyserver.com/download/build?os=linux&arch=amd64&features={{ caddy_features }} dest={{ caddy_home }}/caddy.tar.gz
+  when: (not caddy_update) and (caddy_archive_file is not defined)
+
+- name: Copy already-downloaded Caddy
+  copy: src={{ caddy_archive_file }} dest={{ caddy_home }}/caddy.tar.gz force=yes
+  when: caddy_archive_file is defined
+  register: caddy_copied_binary_cache
 
 - name: Extract Caddy
   unarchive: src={{ caddy_home }}/caddy.tar.gz dest={{ caddy_home }} copy=no owner={{ caddy_user }}
-  when: caddy_binary_cache.changed
+  when: caddy_downloaded_binary_cache.changed or caddy_copied_binary_cache.changed
 
 - name: Extract Caddy
   unarchive: src={{ caddy_home }}/caddy.tar.gz dest={{ caddy_home }} creates={{ caddy_home }}/caddy copy=no owner={{ caddy_user }}
