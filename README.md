@@ -13,15 +13,26 @@ None
 Role Variables
 --------------
 
-**The [Caddyfile](https://caddyserver.com/docs/caddyfile)** (notice the pipe)<br>
-default:
+**The [Caddyfile](https://caddyserver.com/docs/caddyfile)** expressed as path to a [template](https://docs.ansible.com/ansible/template_module.html)<br>
+example:
 ```
-caddy_config: |
-  localhost:2020
-  gzip
-  # tls email@example.com
-  root /var/www
-  git github.com/antoiner77/caddy-ansible
+Caddyfile.jinja2
+```
+example of content as Jinja2 template:
+```
+localhost:{{ myport }}
+gzip
+# tls email@example.com
+root {{ myroot }}
+git github.com/antoiner77/caddy-ansible
+```
+example of content as plan Caddyfile:
+```
+localhost:2020
+gzip
+# tls email@example.com
+root /var/www
+git github.com/antoiner77/caddy-ansible
 ```
 **Auto update Caddy?**<br>
 default:

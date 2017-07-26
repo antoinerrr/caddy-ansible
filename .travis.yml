@@ -20,16 +20,41 @@ install:
   # Create ansible.cfg with correct roles_path
   - printf '[defaults]\nroles_path=../' >ansible.cfg
 
+before_script:
+  - >
+    printf '%s\n'
+    'localhost:{{ myport }}'
+    'log syslog'
+    'errors syslog'
+    'gzip'
+    'git github.com/antoiner77/caddy-ansible'
+    >Caddyfile.jinja2
+  - cat Caddyfile.jinja2
+
 script:
   # Basic role syntax check
   - ansible-playbook tests/test.yml -i tests/inventory --syntax-check
-  - ansible-playbook tests/test.yml -i tests/inventory --connection=local
-  - ansible-playbook tests/test.yml -i tests/inventory --connection=local
   - >
-    ansible-playbook tests/test.yml -i tests/inventory --connection=local
+    ansible-playbook tests/test.yml
+    -e caddy_config_path=./Caddyfile.jinja2
+    -e myport=2020
+    -i tests/inventory --connection=local
+  - >
+    ansible-playbook tests/test.yml
+    -e caddy_config_path=./Caddyfile.jinja2
+    -e myport=2020
+    -i tests/inventory --connection=local
+  - >
+    ansible-playbook tests/test.yml
+    -e caddy_config_path=./Caddyfile.jinja2
+    -e myport=2020
+    -i tests/inventory --connection=local
     | grep -q 'changed=0.*failed=0'
     && (echo 'Idempotence test: pass' && exit 0)
     || (echo 'Idempotence test: fail' && exit 1)
+
+after_failure:
+  - sudo tail /var/log/syslog
 
 notifications:
   webhooks: https://galaxy.ansible.com/api/v1/notifications/
