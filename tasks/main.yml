@@ -34,14 +34,14 @@
   when: caddy_releases_cache.changed or caddy_features_cache.changed
   register: caddy_binary_cache
   retries: 10
-  until: caddy_binary_cache is success
+  until: caddy_binary_cache is succeeded
   tags: skip_ansible_lint
 
 - name: Download Caddy
   get_url: url={{ caddy_url}} dest={{ caddy_home }}/caddy.tar.gz force_basic_auth={{ caddy_license != 'personal' }}
   register: caddy_download
   retries: 10
-  until: caddy_download is success
+  until: caddy_download is succeeded
   tags: skip_ansible_lint
 
 - name: Check if Caddy PGP key is already in keyring
