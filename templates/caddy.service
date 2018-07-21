@@ -26,7 +26,7 @@ Environment=CADDYPATH={{ caddy_certs_dir }}
 
 
 ; Always set "-root" to something safe in case it gets forgotten in the Caddyfile.
-ExecStart={{ caddy_bin_dir }}/caddy -log {{ caddy_log_file }} -http2={{ caddy_http2_enabled }} -agree=true -conf={{ caddy_conf_dir }}/Caddyfile -root=/var/tmp
+ExecStart={{ caddy_bin_dir }}/caddy -log {{ caddy_logs_dir }}{{ caddy_log_file }} -http2={{ caddy_http2_enabled }} -agree=true -conf={{ caddy_conf_dir }}/Caddyfile -root=/var/tmp
 ExecReload=/bin/kill -USR1 $MAINPID
 
 ; Limit the number of file descriptors; see `man systemd.exec` for more limit settings.
@@ -47,6 +47,7 @@ ProtectSystem={{ caddy_systemd_protect_system }}
 ; … except {{ caddy_certs_dir }}, because we want Letsencrypt-certificates there.
 ;   This merely retains r/w access rights, it does not add any new. Must still be writable on the host!
 ReadWriteDirectories={{ caddy_certs_dir }}
+LogsDirectory={{ caddy_logs_dir }}
 
 {% if caddy_systemd_capabilities_enabled %}
 ; The following additional security directives only work with systemd v229 or later.

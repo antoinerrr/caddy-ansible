@@ -10,8 +10,8 @@ caddy_conf_dir: /etc/caddy
 caddy_license: personal
 caddy_license_account_id:
 caddy_license_api_key:
-caddy_log_dir: /var/log/caddy
-caddy_log_file: stdout
+caddy_log_dir: /var/log/caddy/
+caddy_log_file: caddy.log
 caddy_certs_dir: /etc/ssl/caddy
 caddy_http2_enabled: "true"
 caddy_systemd_network_dependency: True
