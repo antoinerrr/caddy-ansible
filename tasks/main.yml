@@ -49,6 +49,8 @@
   delay: 2
   when: caddy_releases_cache.changed or caddy_features_cache.changed
   register: caddy_binary_cache
+  retries: 10
+  until: caddy_binary_cache is succeeded
   tags: skip_ansible_lint
 
 - name: Download Caddy
@@ -60,6 +62,8 @@
   retries: 3
   delay: 2
   register: caddy_download
+  retries: 10
+  until: caddy_download is succeeded
   tags: skip_ansible_lint
 
 - name: Check if Caddy PGP key is already in keyring
