@@ -169,6 +169,15 @@
     state: present
   when: caddy_setcap
 
+- name: Remove safe tmp
+  command: sed -e 's/^PrivateTmp=true/PrivateTmp=false/' -i /etc/systemd/system/caddy.service
+
+- name: Remove safe dev
+  command: sed -e 's/^PrivateDevices=true/PrivateDevices=false/' -i /etc/systemd/system/caddy.service
+
+- name: reload systemd
+  command: systemctl reload-daemon
+
 - name: Start Caddy service
   systemd:
     name: caddy
