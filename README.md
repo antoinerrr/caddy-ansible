@@ -147,6 +147,31 @@ Example with Cloudflare DNS for TLS
         }
 ```
 
+Use virtual hosts
+-----------------
+
+Setup `caddy_vhosts` variable like this:
+
+```
+- caddy_vhosts:
+
+  - server_name: example1.com
+    template: templates/caddy_vhost
+    root: /home/www-data/example1
+
+  - server_name: example2.com
+    template: templates/caddy_vhost
+    root: /home/www-data/example2
+```
+
+Add content of `templates/caddy_vhost`:
+
+```
+{{ item.server_name }} {
+  root {{ item.root }}
+}
+```
+
 Debugging
 ---------
 If the service fails to start you can figure out why by looking at the output of Caddy.<br>
