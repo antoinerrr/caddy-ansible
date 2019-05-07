@@ -153,6 +153,31 @@
     owner: "{{ caddy_user }}"
   notify: reload caddy
 
+- name: Ensure caddy_vhosts_path exists.
+  file:
+    path: "{{ caddy_vhosts_path }}"
+    owner: "{{ caddy_user }}"
+    state: directory
+
+- name: Add managed vhost config files.
+  template:
+    src: "{{ item.template }}"
+    dest: "{{ caddy_vhosts_path }}/{{ item.filename|default(item.server_name.split(' ')[0] ~ '.conf') }}"
+    force: true
+    owner: "{{ caddy_user }}"
+    mode: 0644
+  when: item.state|default('present') != 'absent'
+  with_items: "{{ caddy_vhosts }}"
+  notify: reload caddy
+
+- name: Remove managed vhost config files.
+  file:
+    path: "{{ caddy_vhosts_path }}/{{ item.filename|default(item.server_name.split(' ')[0] ~ '.conf') }}"
+    state: absent
+  when: item.state|default('present') == 'absent'
+  with_items: "{{ caddy_vhosts }}"
+  notify: reload caddy
+
 - name: Systemd service
   template:
     src: caddy.service

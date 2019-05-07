@@ -40,3 +40,5 @@ caddy_config: |
   git github.com/antoiner77/caddy-ansible
 
 caddy_environment_variables: {}
+caddy_vhosts_path: "{{caddy_conf_dir}}/vhosts"
+caddy_vhosts: []
