@@ -14,7 +14,7 @@ Wants=network-online.target systemd-networkd-wait-online.service
 [Service]
 Restart={{ caddy_systemd_restart }}
 StartLimitInterval={{ caddy_systemd_restart_startlimitinterval }}
-StartLimitBurst= {{ caddy_systemd_restart_startlimitburst }}
+StartLimitBurst={{ caddy_systemd_restart_startlimitburst }}
 
 ; User and group the process will run as.
 User={{ caddy_user }}
